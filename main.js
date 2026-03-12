@@ -1,5 +1,7 @@
+import API_BASE_URL from './api.js';
+
 // API Configuration
-const API_BASE = 'http://localhost:8080/api';
+const API_BASE = `${API_BASE_URL}/api`;
 
 // State Management
 const state = {
