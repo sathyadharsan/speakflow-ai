@@ -28,9 +28,19 @@ public class TranslationService {
 
     public TranslateResponse translate(TranslateRequest request) {
         try {
+            String trimmedKey = apiKey != null ? apiKey.trim().replace("\"", "").replace("'", "") : "";
+            if (trimmedKey.isEmpty() || trimmedKey.contains("REPLACE_WITH_ACTUAL_KEY")) {
+                System.err.println("Groq API Error: API Key is invalid. Length: " + trimmedKey.length());
+                return TranslateResponse.builder()
+                        .english("Error: API Key is not configured correctly. Please check your .env file.")
+                        .build();
+            }
+
+            System.out.println("Translation Service using key starting with: " + (trimmedKey.length() > 10 ? trimmedKey.substring(0, 8) + "..." : "short-key"));
+
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("Authorization", "Bearer " + apiKey);
+            headers.set("Authorization", "Bearer " + trimmedKey);
 
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("model", "llama-3.1-8b-instant");

@@ -18,25 +18,80 @@ const state = {
 
 // Helpers
 async function apiRequest(endpoint, method = 'GET', body = null) {
+  // Always fetch current token from storage
+  const token = localStorage.getItem('token');
   const headers = { 'Content-Type': 'application/json' };
-  if (state.token) headers['Authorization'] = `Bearer ${state.token}`;
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+    // Keep local state in sync
+    if (!state.token) state.token = token;
+  }
 
   const options = { method, headers };
   if (body) options.body = JSON.stringify(body);
 
   try {
     const response = await fetch(`${API_BASE}${endpoint}`, options);
+    
+    // 401 Unauthorized: Session is actually invalid/expired
+    if (response.status === 401) {
+      handleLogout();
+      showToast('Session expired. Please login again.', 'error');
+      throw new Error('Unauthorized');
+    }
+
+    // 403 Forbidden: Authenticated but restricted, or CSRF/CORS issue
+    // We DON'T logout here to prevent accidental session loss
+    if (response.status === 403) {
+      const err = await response.json().catch(() => ({ message: 'Access denied' }));
+      showToast(err.message || 'Action restricted or permission denied.', 'error');
+      throw new Error('Forbidden');
+    }
+
     if (!response.ok) {
       const err = await response.json().catch(() => ({ message: 'API Error' }));
-      throw new Error(err.message || 'API request failed');
+      const errorMessage = err.message || 'API request failed';
+      showToast(errorMessage, 'error');
+      throw new Error(errorMessage);
     }
+    
     return await response.json();
   } catch (err) {
-    console.error(err);
-    if (err.message.includes('token')) handleLogout();
+    if (err.message !== 'Unauthorized' && err.message !== 'Forbidden') {
+      console.error('API Request Error:', err);
+      if (!err.message.includes('API request failed')) {
+        showToast('Network error or server unreachable', 'error');
+      }
+    }
     throw err;
   }
 }
+
+
+
+function showToast(message, type = 'success') {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `
+    <div class="toast-icon">
+      <i class="fas ${type === 'success' ? 'fa-check' : 'fa-exclamation'}"></i>
+    </div>
+    <div class="toast-message">${message}</div>
+  `;
+
+  container.appendChild(toast);
+
+  // Auto-remove after 3 seconds
+  setTimeout(() => {
+    toast.classList.add('hide');
+    setTimeout(() => toast.remove(), 400);
+  }, 3000);
+}
+
 
 // Templates
 const Templates = {
@@ -451,16 +506,18 @@ async function handleAuthSubmit(e) {
       state.user = res.user;
       localStorage.setItem('token', res.token);
       localStorage.setItem('user', JSON.stringify(res.user));
+      showToast('Login Successful');
       navigate('dashboard');
     } else {
       const name = document.getElementById('auth-name').value;
       await apiRequest('/auth/signup', 'POST', { name, email, password });
+      showToast('Signup Successful');
       state.authTab = 'login';
       render();
-      alert('Account created! Please login.');
     }
   } catch (err) { }
 }
+
 
 function handleLogout() {
   state.token = null;

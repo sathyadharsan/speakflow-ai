@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/speaking")
-@CrossOrigin(origins = "*")
 public class SpeakingController {
 
     @Autowired

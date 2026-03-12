@@ -1,7 +1,6 @@
 package ai.speakflow.backend.service;
 
 import ai.speakflow.backend.dto.external.DeepSeekRequest;
-import ai.speakflow.backend.dto.external.DeepSeekResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -21,6 +20,7 @@ public class AIService {
 
     private static final String GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
     private final RestTemplate restTemplate = new RestTemplate();
+    private final com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
 
     public Map<String, String> analyzeSentence(String sentence) {
         HttpHeaders headers = new HttpHeaders();
@@ -62,19 +62,34 @@ public class AIService {
                                 .build()))
                 .build();
 
-        HttpEntity<DeepSeekRequest> entity = new HttpEntity<>(request, headers);
-
         try {
-            DeepSeekResponse response = restTemplate.postForObject(GROQ_API_URL, entity, DeepSeekResponse.class);
-            if (response != null && !response.getChoices().isEmpty()) {
-                String content = response.getChoices().get(0).getMessage().getContent();
-                return parseAIResponse(content);
+            String trimmedKey = apiKey != null ? apiKey.trim().replace("\"", "").replace("'", "") : "";
+            if (trimmedKey.isEmpty() || trimmedKey.contains("REPLACE_WITH_ACTUAL_KEY")) {
+                String reason = "API Key is invalid or placeholder. Key length: " + trimmedKey.length();
+                System.err.println("Groq API Error: " + reason);
+                return getMockResponse(sentence, reason);
+            }
+
+            // Diagnostic logging (safe)
+            System.out.println("AI Service using key starting with: " + (trimmedKey.length() > 10 ? trimmedKey.substring(0, 8) + "..." : "short-key"));
+
+            headers.set("Authorization", "Bearer " + trimmedKey);
+            HttpEntity<DeepSeekRequest> entity = new HttpEntity<>(request, headers);
+            String rawResponse = restTemplate.postForObject(GROQ_API_URL, entity, String.class);
+            
+            if (rawResponse != null) {
+                com.fasterxml.jackson.databind.JsonNode root = objectMapper.readTree(rawResponse);
+                if (root.has("choices") && root.path("choices").size() > 0) {
+                    String content = root.path("choices").get(0).path("message").path("content").asText();
+                    return parseAIResponse(content);
+                }
             }
         } catch (Exception e) {
             System.err.println("Groq API Error: " + e.getMessage());
+            return getMockResponse(sentence, e.getMessage());
         }
 
-        return getMockResponse(sentence);
+        return getMockResponse(sentence, "Unknown error");
     }
 
     private Map<String, String> parseAIResponse(String content) {
@@ -147,10 +162,10 @@ public class AIService {
         return result;
     }
 
-    private Map<String, String> getMockResponse(String sentence) {
+    private Map<String, String> getMockResponse(String sentence, String error) {
         Map<String, String> mock = new HashMap<>();
         mock.put("corrected", sentence);
-        mock.put("explanation", "Could not connect to AI service. Showing original.");
+        mock.put("explanation", "AI Service Error: " + error);
         mock.put("better", sentence);
         return mock;
     }

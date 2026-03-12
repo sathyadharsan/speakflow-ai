@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/translate")
-@CrossOrigin(origins = "*")
 public class TranslateController {
 
     @Autowired
