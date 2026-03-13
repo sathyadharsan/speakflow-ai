@@ -29,13 +29,23 @@ public class DashboardService {
         List<PracticeSession> sessions = practiceSessionRepository.findByUser(user);
         long totalSessions = sessions.size();
 
+        double avgGrammar = 0;
+        double avgPronunciation = 0;
+        double avgSpeedScore = 0;
         int confidence = 0;
+
         if (!sessions.isEmpty()) {
+            avgGrammar = sessions.stream().mapToInt(PracticeSession::getGrammarScore).average().orElse(0);
+            avgPronunciation = sessions.stream().mapToInt(PracticeSession::getPronunciationScore).average().orElse(0);
+            avgSpeedScore = 75; // Mock speed score for now, can be computed later
             confidence = (int) sessions.stream().mapToInt(PracticeSession::getConfidenceScore).average().orElse(0);
         }
 
+        // FluencyScore = (pronunciationScore * 0.5) + (grammarScore * 0.3) + (speakingSpeedScore * 0.2)
+        int finalFluencyScore = (int)((avgPronunciation * 0.5) + (avgGrammar * 0.3) + (avgSpeedScore * 0.2));
+
         // Recent 5 sessions
-        List<DashboardResponse.PracticeSessionDto> recentDto = sessions.stream()
+        java.util.List<DashboardResponse.PracticeSessionDto> recentDto = sessions.stream()
                 .sorted((s1, s2) -> s2.getCreatedAt().compareTo(s1.getCreatedAt()))
                 .limit(5)
                 .map(s -> DashboardResponse.PracticeSessionDto.builder()
@@ -48,18 +58,35 @@ public class DashboardService {
                         .build())
                 .collect(Collectors.toList());
 
-        // Mock streak for demo
-        int streak = totalSessions > 0 ? 5 + (int) (totalSessions / 10) : 0;
         String insight = totalSessions > 3 ? "Your speaking confidence improved by 12% this week. Keep practicing!"
                 : "Welcome! Start your first session to see insights.";
 
         return DashboardResponse.builder()
                 .userName(user.getName())
                 .practiceSessions(totalSessions)
-                .streak(streak)
+                .totalSessions(totalSessions)
+                .streak(user.getPracticeStreak())
+                .practiceStreak(user.getPracticeStreak())
                 .confidenceScore(confidence > 0 ? confidence : 65)
+                .fluencyScore(finalFluencyScore > 0 ? finalFluencyScore : 70)
+                .todayPracticeMinutes((int) (totalSessions * 2)) // Mocking 2 mins per session
+                .wordsLearned(user.getTotalWordsLearned())
+                .userLevel(user.getLevel())
+                .userXp(user.getXp())
                 .progressInsight(insight)
+                .aiImprovementTip("Focus on pausing briefly after complex sentences to improve overall clarity.")
                 .recentSessions(recentDto)
                 .build();
+    }
+
+    public ProgressResponse getProgressData() {
+        // Return mock weekly statistics for now
+        java.util.List<ProgressResponse.WeeklyFluency> weekly = new java.util.ArrayList<>();
+        weekly.add(new ProgressResponse.WeeklyFluency("Week 1", 62));
+        weekly.add(new ProgressResponse.WeeklyFluency("Week 2", 68));
+        weekly.add(new ProgressResponse.WeeklyFluency("Week 3", 74));
+        weekly.add(new ProgressResponse.WeeklyFluency("Week 4", 81));
+        
+        return ProgressResponse.builder().weeklyFluency(weekly).build();
     }
 }

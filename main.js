@@ -259,6 +259,146 @@ const Templates = {
     </footer>
   `,
 
+  progress: () => {
+    const data = state.dashboardData || { confidenceScore: 65, fluencyScore: 70, todayPracticeMinutes: 0, totalWordsLearned: 0 };
+    return `
+    <div class="dashboard-layout">
+      ${Sidebar('progress')}
+      <main class="main-content">
+        <h1 class="poppins">Learning Progress</h1>
+        <p style="color: var(--text-muted); margin-bottom: 40px;">Deep dive into your speaking analytics and trends.</p>
+
+        <div class="dashboard-grid-enhanced">
+           <div class="stat-card">
+              <span class="stat-label">Pronunciation Accuracy</span>
+              <span class="stat-value" style="color: var(--primary-green);">82%</span>
+              <div class="xp-bar-container"><div class="xp-bar-fill" style="width: 82%; background: var(--gradient-success);"></div></div>
+           </div>
+           <div class="stat-card">
+              <span class="stat-label">Grammar Accuracy</span>
+              <span class="stat-value" style="color: var(--primary-blue);">${data.confidenceScore}%</span>
+              <div class="xp-bar-container"><div class="xp-bar-fill" style="width: ${data.confidenceScore}%;"></div></div>
+           </div>
+           <div class="stat-card">
+              <span class="stat-label">Total Practice Sessions</span>
+              <span class="stat-value">${data.totalSessions}</span>
+              <span class="stat-desc">Consistency is key!</span>
+           </div>
+        </div>
+
+        <div class="dashboard-sections">
+           <div class="left-section">
+              <div class="chart-wrapper">
+                 <h3 class="poppins" style="margin-bottom: 24px;">Weekly Fluency Trend</h3>
+                 <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px;">Calculation: 50% Pronunciation + 30% Grammar + 20% Speed</div>
+                 <canvas id="fluencyChart" height="200"></canvas>
+              </div>
+           </div>
+           <div class="right-section">
+              <div class="history-card">
+                 <h3 class="poppins" style="margin-bottom: 12px;">Improvement Tips</h3>
+                 <ul style="list-style: none; padding: 0;">
+                    <li style="padding: 12px 0; border-bottom: 1px solid #f0f0f0;">
+                       <i class="fas fa-check-circle" style="color: var(--primary-green);"></i> Practice more <strong>multi-syllable</strong> words.
+                    </li>
+                    <li style="padding: 12px 0; border-bottom: 1px solid #f0f0f0;">
+                       <i class="fas fa-info-circle" style="color: var(--primary-blue);"></i> ${data.progressInsight}
+                    </li>
+                 </ul>
+              </div>
+           </div>
+        </div>
+      </main>
+    </div>
+    `
+  },
+
+  profile: () => `
+    <div class="dashboard-layout">
+      ${Sidebar('profile')}
+      <main class="main-content">
+        <div class="welcome-section">
+          <h1 class="poppins">My Profile</h1>
+          <p>Manage your learning preferences and view your achievements.</p>
+        </div>
+
+        <div class="dashboard-sections">
+           <div class="left-section">
+              <div class="history-card">
+                 <div style="display: flex; align-items: center; gap: 24px; margin-bottom: 32px;">
+                    <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--gradient-main); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+                       ${state.user?.name?.[0].toUpperCase() || 'U'}
+                    </div>
+                    <div>
+                       <h2 class="poppins">${state.user?.name || 'User Name'} <span class="level-badge">Lv ${state.dashboardData?.userLevel || 1} Pro</span></h2>
+                       <p style="color: var(--text-muted);">${state.user?.email || 'email@example.com'}</p>
+                    </div>
+                 </div>
+                 
+                 <form onsubmit="handleProfileUpdate(event)">
+                    <div class="form-group">
+                       <label>Full Name</label>
+                       <input type="text" name="name" value="${state.user?.name || ''}" class="form-group" style="width: 100%; padding: 12px; border: 1px solid #E2E8F0; border-radius: 8px; outline: none;">
+                    </div>
+
+                    <div class="form-group">
+                       <label>Learning Goal</label>
+                       <select name="learningGoal" class="form-group" style="width: 100%; padding: 12px; border: 1px solid #E2E8F0; border-radius: 8px; outline: none;">
+                          <option value="Job Interview" ${state.dashboardData?.learningGoal === 'Job Interview' ? 'selected' : ''}>Job Interview</option>
+                          <option value="Public Speaking" ${state.dashboardData?.learningGoal === 'Public Speaking' ? 'selected' : ''}>Public Speaking</option>
+                          <option value="Daily Conversation" ${state.dashboardData?.learningGoal === 'Daily Conversation' ? 'selected' : ''}>Daily Conversation</option>
+                          <option value="Academic English" ${state.dashboardData?.learningGoal === 'Academic English' ? 'selected' : ''}>Academic English</option>
+                       </select>
+                    </div>
+
+                    <div class="form-group">
+                       <label>Native Language</label>
+                       <select name="preferredLanguage" class="form-group" style="width: 100%; padding: 12px; border: 1px solid #E2E8F0; border-radius: 8px; outline: none;">
+                          <option value="Tamil" ${state.dashboardData?.preferredLanguage === 'Tamil' ? 'selected' : ''}>Tamil</option>
+                          <option value="Telugu" ${state.dashboardData?.preferredLanguage === 'Telugu' ? 'selected' : ''}>Telugu</option>
+                          <option value="Hindi" ${state.dashboardData?.preferredLanguage === 'Hindi' ? 'selected' : ''}>Hindi</option>
+                          <option value="English" ${state.dashboardData?.preferredLanguage === 'English' ? 'selected' : ''}>English</option>
+                       </select>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary" style="margin-top: 20px;">Save Changes</button>
+                 </form>
+              </div>
+           </div>
+           
+           <div class="right-section">
+              <div class="history-card">
+                 <h3 class="poppins" style="margin-bottom: 20px;">Achievements</h3>
+                 <div style="display: grid; gap: 16px;">
+                    <div class="achievement-badge unlocked">
+                       <div class="badge-icon"><i class="fas fa-rocket"></i></div>
+                       <div>
+                          <div style="font-weight: 600; font-size: 0.9rem;">Fast Learner</div>
+                          <div style="font-size: 0.75rem; color: var(--text-muted);">Completed first 5 sessions</div>
+                       </div>
+                    </div>
+                    <div class="achievement-badge unlocked">
+                       <div class="badge-icon"><i class="fas fa-fire"></i></div>
+                       <div>
+                          <div style="font-weight: 600; font-size: 0.9rem;">On Fire!</div>
+                          <div style="font-size: 0.75rem; color: var(--text-muted);">Reached 5 day streak</div>
+                       </div>
+                    </div>
+                    <div class="achievement-badge">
+                       <div class="badge-icon"><i class="fas fa-trophy"></i></div>
+                       <div>
+                          <div style="font-weight: 600; font-size: 0.9rem;">Vocabulary Master</div>
+                          <div style="font-size: 0.75rem; color: var(--text-muted);">Learn 500 words</div>
+                       </div>
+                    </div>
+                 </div>
+              </div>
+           </div>
+        </div>
+      </main>
+    </div>
+  `,
+
   auth: () => `
     <div class="auth-container">
       <div class="auth-card-split slide-up">
@@ -319,15 +459,49 @@ const Templates = {
             <span class="stat-value">${data.practiceSessions}</span>
             <span class="stat-desc">Speaking practices completed</span>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon"><i class="fas fa-chart-pie"></i></div>
-            <span class="stat-label">Confidence Score</span>
-            <span class="stat-value">${data.confidenceScore}%</span>
-            <span class="stat-desc">Average session score</span>
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fas fa-chart-pie"></i></div>
+              <span class="stat-label">Fluency Score</span>
+              <span class="stat-value">${data.fluencyScore}%</span>
+              <span class="stat-desc">Better than 72% of users</span>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="color: var(--primary-orange);"><i class="fas fa-fire"></i></div>
+              <span class="stat-label">Daily Streak</span>
+              <span class="stat-value">${data.practiceStreak} 🔥</span>
+              <span class="stat-desc">Next bonus in 2 days</span>
+            </div>
           </div>
-        </div>
 
-        <div class="dashboard-sections">
+          <div class="dashboard-grid-enhanced">
+             <div class="stat-card">
+                <span class="stat-label">Words Learned</span>
+                <span class="stat-value">${data.wordsLearned}</span>
+                <span class="stat-desc">VOCABULARY COUNTER</span>
+             </div>
+             <div class="stat-card">
+                <span class="stat-label">Total Sessions</span>
+                <span class="stat-value">${data.totalSessions}</span>
+                <span class="stat-desc">ACROSS ALL TOOLS</span>
+             </div>
+             <div class="stat-card">
+                <span class="stat-label">Today's Practice</span>
+                <span class="stat-value">${data.todayPracticeMinutes} Min</span>
+                <div class="xp-bar-container"><div class="xp-bar-fill" style="width: ${Math.min(100, (data.todayPracticeMinutes/20)*100)}%;"></div></div>
+             </div>
+             <div class="stat-card">
+                <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                   <div>
+                      <span class="stat-label">Level ${data.userLevel}</span>
+                      <div class="stat-value" style="font-size: 1.25rem;">${data.userXp} XP</div>
+                   </div>
+                   <div class="level-badge" style="margin-bottom: 8px;">${data.userXp > 10000 ? 'Pro Speaker' : data.userXp > 2500 ? 'Advanced' : 'Learner'}</div>
+                </div>
+                <div class="xp-bar-container"><div class="xp-bar-fill" style="width: ${(data.userXp % 1000) / 10}%;"></div></div>
+             </div>
+          </div>
+
+          <div class="dashboard-sections">
           <div class="left-section">
             <div class="history-card">
               <h3 class="poppins" style="margin-bottom: 24px;">Recent Practice History</h3>
@@ -354,14 +528,20 @@ const Templates = {
             </div>
             
             <div class="insight-card">
-              <h4 class="poppins" style="margin-bottom: 8px;"><i class="fas fa-lightbulb"></i> Progress Insight</h4>
-              <p style="font-size: 0.9rem; color: var(--text-dark);">${data.progressInsight}</p>
+              <h4 class="poppins" style="margin-bottom: 8px;"><i class="fas fa-lightbulb"></i> Daily Insight</h4>
+              <p style="font-size: 0.9rem; color: var(--text-dark);">${data.aiImprovementTip || data.progressInsight}</p>
+            </div>
+
+            <div class="quick-practice-card" style="margin-top: 32px;">
+               <h4 class="poppins"><i class="fas fa-bolt"></i> 30s Challenge</h4>
+               <p style="font-size: 0.85rem; opacity: 0.9; margin-bottom: 16px;">"Describe your surroundings in 3 sentences."</p>
+               <button class="btn-secondary" onclick="navigate('speaking_practice')">Start Quick Blitz</button>
             </div>
 
             <div class="practice-card" style="margin-top: 32px; background: var(--gradient-main); color: white; padding: 24px; border-radius: 16px;">
                <h3 class="poppins">Start Practice</h3>
                <p style="opacity: 0.9; margin: 8px 0 20px; font-size: 0.9rem;">Click to get instant AI feedback.</p>
-               <button class="btn-secondary" style="border: none; width: 100%;" onclick="navigate('practice_selection')">Explore Modes</button>
+               <button class="btn-secondary" style="border: none; width: 100%; color: var(--primary-purple); background: white;" onclick="navigate('practice_selection')">Explore Modes</button>
             </div>
           </div>
         </div>
@@ -505,9 +685,9 @@ function Sidebar(active) {
       <ul class="sidebar-menu">
         <li><a href="#" class="${active === 'dashboard' ? 'active' : ''}" onclick="navigate('dashboard')"><i class="fas fa-home"></i> Dashboard</a></li>
         <li><a href="#" class="${active === 'practice' ? 'active' : ''}" onclick="navigate('practice_selection')"><i class="fas fa-microphone"></i> Practice</a></li>
+        <li><a href="#" class="${active === 'progress' ? 'active' : ''}" onclick="navigate('progress')"><i class="fas fa-chart-line"></i> Progress</a></li>
         <li><a href="#" class="${active === 'translate' ? 'active' : ''}" onclick="navigate('translate')"><i class="fas fa-language"></i> Translate</a></li>
-        <li><a href="#"><i class="fas fa-chart-line"></i> Progress</a></li>
-        <li><a href="#"><i class="fas fa-user"></i> Profile</a></li>
+        <li><a href="#" class="${active === 'profile' ? 'active' : ''}" onclick="navigate('profile')"><i class="fas fa-user"></i> Profile</a></li>
       </ul>
       <div style="margin-top: auto;">
          <a href="#" onclick="handleLogout()" style="text-decoration: none; color: var(--text-muted); display: flex; align-items: center; gap: 8px; padding: 12px 16px;">
@@ -522,16 +702,83 @@ function Sidebar(active) {
 async function navigate(page) {
   state.activePage = page;
 
-  if (page === 'dashboard') {
+  if (page === 'dashboard' || page === 'progress' || page === 'profile') {
     if (!state.token) return navigate('auth');
     try {
       state.dashboardData = await apiRequest('/dashboard');
+      if (page === 'progress') state.progressData = await apiRequest('/dashboard/progress');
     } catch (e) { handleLogout(); }
   } else if ((page === 'practice_selection' || page === 'translate') && !state.token) {
     return navigate('auth');
   }
 
   render();
+  if (page === 'progress') setTimeout(initCharts, 100);
+}
+
+async function handleProfileUpdate(e) {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  const data = Object.fromEntries(formData.entries());
+  
+  try {
+    const btn = e.target.querySelector('button');
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+    
+    await apiRequest('/profile', 'PUT', data);
+    
+    // Update local state
+    state.user.name = data.name;
+    localStorage.setItem('user', JSON.stringify(state.user));
+    
+    showToast('Profile updated successfully!', 'success');
+  } catch (err) {
+    showToast('Failed to update profile', 'error');
+  } finally {
+    navigate('profile');
+  }
+}
+
+function initCharts() {
+  const ctx = document.getElementById('fluencyChart');
+  if (!ctx) return;
+  
+  const weeklyData = state.progressData?.weeklyFluency || [
+    { week: 'Week 1', score: 62 },
+    { week: 'Week 2', score: 68 },
+    { week: 'Week 3', score: 74 },
+    { week: 'Week 4', score: 81 }
+  ];
+
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: weeklyData.map(d => d.week),
+      datasets: [{
+        label: 'Fluency Score',
+        data: weeklyData.map(d => d.score),
+        borderColor: '#6C63FF',
+        tension: 0.4,
+        fill: true,
+        backgroundColor: 'rgba(108, 99, 255, 0.1)',
+        pointBackgroundColor: '#6C63FF',
+        pointRadius: 5
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { 
+        y: { 
+          beginAtZero: false, 
+          grid: { color: '#f0f0f0' },
+          ticks: { stepSize: 10 }
+        }, 
+        x: { grid: { display: false } } 
+      }
+    }
+  });
 }
 
 function setAuthTab(tab) {

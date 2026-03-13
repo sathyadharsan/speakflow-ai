@@ -12,7 +12,15 @@ public class DashboardResponse {
     private long practiceSessions;
     private int streak;
     private int confidenceScore;
+    private int fluencyScore;
+    private int practiceStreak;
+    private long totalSessions;
+    private long wordsLearned;
+    private int todayPracticeMinutes;
+    private int userLevel;
+    private int userXp;
     private String progressInsight;
+    private String aiImprovementTip;
     private List<PracticeSessionDto> recentSessions;
 
     @Data

@@ -31,6 +31,12 @@ public class PracticeSession {
     private Integer grammarScore;
     private Integer fluencyScore;
     private Integer confidenceScore;
+    private Integer pronunciationScore;
+    private Double speakingSpeed; // words per min
+    private Integer totalWords;
+    
+    @Column(columnDefinition = "TEXT")
+    private String improvementTip;
 
     private LocalDateTime createdAt;
 

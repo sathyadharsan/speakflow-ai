@@ -2,7 +2,11 @@
 :root {
     --primary-purple: #6C63FF;
     --primary-blue: #4A90E2;
+    --primary-green: #48BB78;
+    --primary-orange: #ED8936;
     --gradient-main: linear-gradient(135deg, #6C63FF 0%, #4A90E2 100%);
+    --gradient-success: linear-gradient(135deg, #48BB78 0%, #38B2AC 100%);
+    --gradient-warning: linear-gradient(135deg, #ED8936 0%, #F6AD55 100%);
     --text-dark: #2D3748;
     --text-muted: #718096;
     --bg-light: #F7FAFC;
@@ -155,6 +159,29 @@ nav { display: flex; justify-content: space-between; align-items: center; paddin
 .history-meta { display: flex; gap: 12px; margin-top: 8px; font-size: 0.75rem; color: var(--text-muted); }
 
 .insight-card { background: #F3F4FF; padding: 24px; border-radius: 16px; border-left: 4px solid var(--primary-purple); margin-top: 24px; }
+
+/* Progress & XP Components */
+.xp-bar-container { background: #E2E8F0; height: 12px; border-radius: 6px; overflow: hidden; margin: 12px 0; }
+.xp-bar-fill { background: var(--gradient-main); height: 100%; transition: width 0.5s ease-out; }
+
+.progress-circle-container { position: relative; width: 120px; height: 120px; margin: 20px auto; }
+.progress-circle-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: 700; font-size: 1.5rem; }
+
+.achievement-badge { padding: 12px; border-radius: 12px; background: white; border: 1px solid #E2E8F0; display: flex; align-items: center; gap: 12px; transition: transform 0.2s; }
+.achievement-badge.unlocked { border-color: var(--primary-purple); background: #F3F4FF; }
+.achievement-badge:hover { transform: translateY(-3px); box-shadow: var(--shadow-soft); }
+.badge-icon { width: 40px; height: 40px; border-radius: 50%; background: #F7FAFC; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
+.unlocked .badge-icon { background: var(--primary-purple); color: white; }
+
+.level-badge { background: var(--primary-purple); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+
+.dashboard-grid-enhanced { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; margin-bottom: 32px; }
+
+.quick-practice-card { background: var(--gradient-success); color: white; padding: 20px; border-radius: 16px; }
+.quick-practice-card h4 { margin-bottom: 8px; }
+.quick-practice-card .btn-secondary { background: rgba(255,255,255,0.2); color: white; border: none; font-size: 0.85rem; width: 100%; }
+
+.chart-wrapper { background: white; padding: 24px; border-radius: 16px; box-shadow: var(--shadow-soft); margin-bottom: 24px; }
 
 /* Practice Selection */
 .mode-selection { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-top: 32px; }

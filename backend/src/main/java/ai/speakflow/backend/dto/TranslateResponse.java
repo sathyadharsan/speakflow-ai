@@ -11,4 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class TranslateResponse {
     private String english;
+    private String tamil;
+    private String tanglish;
 }

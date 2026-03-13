@@ -17,4 +17,9 @@ public class DashboardController {
     public ResponseEntity<DashboardResponse> getDashboard() {
         return ResponseEntity.ok(dashboardService.getDashboardData());
     }
+
+    @GetMapping("/progress")
+    public ResponseEntity<?> getProgress() {
+        return ResponseEntity.ok(dashboardService.getProgressData());
+    }
 }
