@@ -20,6 +20,11 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
-        return ResponseEntity.ok(authService.login(request));
+        return authService.login(request);
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(jakarta.servlet.http.HttpServletRequest request) {
+        return authService.refresh(request);
     }
 }

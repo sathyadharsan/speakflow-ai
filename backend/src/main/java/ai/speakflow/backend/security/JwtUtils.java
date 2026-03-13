@@ -17,21 +17,52 @@ public class JwtUtils {
     @Value("${speakflow.jwt.secret}")
     private String jwtSecret;
 
-    @Value("${speakflow.jwt.expiration}")
-    private int jwtExpirationMs;
+    @Value("${speakflow.jwt.access.expiration}")
+    private int jwtAccessExpirationMs;
+
+    @Value("${speakflow.jwt.refresh.expiration}")
+    private int jwtRefreshExpirationMs;
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateJwtToken(Authentication authentication) {
+    public String generateAccessToken(Authentication authentication) {
         UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
+        return generateToken(userPrincipal.getUsername(), jwtAccessExpirationMs);
+    }
+
+    public String generateAccessTokenFromEmail(String email) {
+        return generateToken(email, jwtAccessExpirationMs);
+    }
+
+    public String generateRefreshToken(Authentication authentication) {
+        UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
+        return generateToken(userPrincipal.getUsername(), jwtRefreshExpirationMs);
+    }
+
+    private String generateToken(String subject, int expirationMs) {
         return Jwts.builder()
-                .setSubject(userPrincipal.getUsername())
+                .setSubject(subject)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
+                .setExpiration(new Date((new Date()).getTime() + expirationMs))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    public org.springframework.http.ResponseCookie generateRefreshCookie(String refreshToken) {
+        return org.springframework.http.ResponseCookie.from("refreshToken", refreshToken)
+                .path("/")
+                .maxAge(7 * 24 * 60 * 60)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .build();
+    }
+
+    public String getRefreshTokenFromCookies(jakarta.servlet.http.HttpServletRequest request) {
+        jakarta.servlet.http.Cookie cookie = org.springframework.web.util.WebUtils.getCookie(request, "refreshToken");
+        return (cookie != null) ? cookie.getValue() : null;
     }
 
     public String getUserNameFromJwtToken(String token) {

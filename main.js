@@ -17,6 +17,14 @@ const state = {
 };
 
 // Helpers
+let isRefreshing = false;
+let refreshSubscribers = [];
+
+function onTokenRefreshed(newToken) {
+  refreshSubscribers.map(cb => cb(newToken));
+  refreshSubscribers = [];
+}
+
 async function apiRequest(endpoint, method = 'GET', body = null) {
   // Always fetch current token from storage
   const token = localStorage.getItem('token');
@@ -28,22 +36,59 @@ async function apiRequest(endpoint, method = 'GET', body = null) {
     if (!state.token) state.token = token;
   }
 
-  const options = { method, headers };
+  const options = { 
+    method, 
+    headers,
+    credentials: 'include' // Required to send/receive cookies cross-domain
+  };
   if (body) options.body = JSON.stringify(body);
 
   try {
     const response = await fetch(`${API_BASE}${endpoint}`, options);
     
-    // 401 Unauthorized: Session is actually invalid/expired
-    if (response.status === 401) {
-      handleLogout();
-      showToast('Session expired. Please login again.', 'error');
-      throw new Error('Unauthorized');
+    // 401 Unauthorized: Access token expired, attempt refresh
+    if (response.status === 401 && !endpoint.includes('/auth/refresh')) {
+      if (!isRefreshing) {
+        isRefreshing = true;
+        try {
+          const refreshRes = await fetch(`${API_BASE}/auth/refresh`, { 
+            method: 'POST', 
+            credentials: 'include' 
+          });
+          
+          if (refreshRes.ok) {
+            const data = await refreshRes.json();
+            const newToken = data.accessToken;
+            localStorage.setItem('token', newToken);
+            state.token = newToken;
+            isRefreshing = false;
+            onTokenRefreshed(newToken);
+          } else {
+            throw new Error('Refresh failed');
+          }
+        } catch (e) {
+          isRefreshing = false;
+          handleLogout();
+          showToast('Session expired. Please login again.', 'error');
+          throw new Error('Unauthorized');
+        }
+      }
+
+      // Return a promise that resolves when the token is refreshed
+      return new Promise((resolve) => {
+        refreshSubscribers.push((newToken) => {
+          options.headers['Authorization'] = `Bearer ${newToken}`;
+          resolve(fetch(`${API_BASE}${endpoint}`, options).then(r => {
+            if (!r.ok) throw new Error('Retry failed');
+            return r.json();
+          }));
+        });
+      });
     }
 
-    // 403 Forbidden: Authenticated but restricted, or CSRF/CORS issue
-    // We DON'T logout here to prevent accidental session loss
+    // 403 Forbidden: Session restricted or invalid
     if (response.status === 403) {
+      handleLogout();
       const err = await response.json().catch(() => ({ message: 'Access denied' }));
       showToast(err.message || 'Action restricted or permission denied.', 'error');
       throw new Error('Forbidden');
@@ -60,7 +105,7 @@ async function apiRequest(endpoint, method = 'GET', body = null) {
   } catch (err) {
     if (err.message !== 'Unauthorized' && err.message !== 'Forbidden') {
       console.error('API Request Error:', err);
-      if (!err.message.includes('API request failed')) {
+      if (!err.message.includes('API request failed') && !err.message.includes('Retry failed')) {
         showToast('Network error or server unreachable', 'error');
       }
     }
@@ -630,5 +675,21 @@ window.resetPractice = resetPractice;
 window.handleChatSubmit = handleChatSubmit;
 window.handleTranslateSubmit = handleTranslateSubmit;
 
-// Initial render
-render();
+// Session Check on Load
+async function checkSession() {
+  if (state.token) {
+    try {
+      // navigate('dashboard') will verify the token by calling /api/dashboard
+      await navigate('dashboard');
+    } catch (err) {
+      // If verification fails, navigate will trigger handleLogout
+      console.log('Session verification failed, staying on landing page.');
+      render();
+    }
+  } else {
+    render();
+  }
+}
+
+// Initial session check instead of just render
+checkSession();

@@ -41,27 +41,49 @@ public class AuthService {
         return new MessageResponse("User registered successfully");
     }
 
-    public LoginResponse login(LoginRequest loginRequest) {
+    public org.springframework.http.ResponseEntity<LoginResponse> login(LoginRequest loginRequest) {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            String jwt = jwtUtils.generateJwtToken(authentication);
+            
+            String accessToken = jwtUtils.generateAccessToken(authentication);
+            String refreshToken = jwtUtils.generateRefreshToken(authentication);
+            
+            org.springframework.http.ResponseCookie refreshCookie = jwtUtils.generateRefreshCookie(refreshToken);
 
             User user = userRepository.findByEmail(loginRequest.getEmail())
                     .orElseThrow(() -> new RuntimeException("Error: User record not found after authentication"));
 
-            return LoginResponse.builder()
-                    .token(jwt)
+            LoginResponse body = LoginResponse.builder()
+                    .token(accessToken)
                     .user(LoginResponse.UserDto.builder()
                             .id(user.getId())
                             .name(user.getName())
                             .email(user.getEmail())
                             .build())
                     .build();
+            
+            return org.springframework.http.ResponseEntity.ok()
+                    .header(org.springframework.http.HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                    .body(body);
         } catch (BadCredentialsException e) {
             throw new BadCredentialsException("Invalid email or password");
         }
+    }
+
+    public org.springframework.http.ResponseEntity<?> refresh(jakarta.servlet.http.HttpServletRequest request) {
+        String refreshToken = jwtUtils.getRefreshTokenFromCookies(request);
+        
+        if (refreshToken != null && jwtUtils.validateJwtToken(refreshToken)) {
+            String email = jwtUtils.getUserNameFromJwtToken(refreshToken);
+            String newAccessToken = jwtUtils.generateAccessTokenFromEmail(email);
+            
+            return org.springframework.http.ResponseEntity.ok(new TokenRefreshResponse(newAccessToken, "Bearer"));
+        }
+        
+        return org.springframework.http.ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)
+                .body(new MessageResponse("Refresh token is invalid or expired"));
     }
 }
