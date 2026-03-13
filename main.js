@@ -163,7 +163,7 @@ const Templates = {
           </div>
         </div>
         <div class="hero-image">
-          <img src="https://cdni.iconscout.com/illustration/premium/thumb/ai-chatbot-illustration-download-in-svg-png-gif-file-formats--chat-bot-artificial-intelligence-robot-pack-network-communication-illustrations-8153406.png" alt="SpeakFlow AI Illustration">
+          <img src="assets/hero-illustration.png" alt="SpeakFlow AI Illustration">
         </div>
       </section>
 
@@ -658,9 +658,17 @@ const Templates = {
           <p style="color: var(--text-muted); margin-bottom: 32px;">Type in Tamil or Tanglish to get an instant English translation.</p>
           
           <div class="history-card" style="padding: 32px; margin-bottom: 32px;">
+            <div class="mic-btn-container">
+              <button id="translator-mic-btn" class="translator-mic-btn" onclick="handleTranslateMicClick()" title="Click to speak">
+                <i class="fas fa-microphone"></i>
+              </button>
+            </div>
+            <div style="text-align: center; margin-bottom: 12px; font-size: 0.85rem; color: var(--text-muted);" id="mic-hint">
+              Tap to speak (Tamil or Tanglish)
+            </div>
             <div class="form-group">
               <label>Enter Tamil / Tanglish Text</label>
-              <textarea id="translate-input" placeholder="Type here... (e.g. 'naethu na school ku pona pa')" 
+              <textarea id="translate-input" placeholder="Type here or use microphone... (e.g. 'naethu na school ku pona pa')" 
                 style="width: 100%; height: 120px; padding: 16px; border: 1px solid #E2E8F0; border-radius: 12px; font-size: 1rem; resize: none; outline: none;"></textarea>
             </div>
             <button class="btn-primary" onclick="handleTranslateSubmit()" style="width: 100%;">Translate</button>
@@ -865,6 +873,69 @@ async function handleTranslateSubmit() {
   }
 }
 
+let translatorRecognition = null;
+let isTranslatorListening = false;
+
+function handleTranslateMicClick() {
+  const micBtn = document.getElementById('translator-mic-btn');
+  const micHint = document.getElementById('mic-hint');
+  const inputPanel = document.getElementById('translate-input');
+
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    showToast('Speech recognition is not supported in this browser.', 'error');
+    return;
+  }
+
+  if (isTranslatorListening) {
+    translatorRecognition.stop();
+    return;
+  }
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  translatorRecognition = new SpeechRecognition();
+  
+  translatorRecognition.lang = 'en-IN'; // Better for Tanglish recognition
+  translatorRecognition.interimResults = false;
+  translatorRecognition.maxAlternatives = 1;
+
+  translatorRecognition.onstart = () => {
+    isTranslatorListening = true;
+    micBtn.classList.add('recording');
+    micBtn.innerHTML = '<i class="fas fa-stop"></i>';
+    micHint.innerText = 'Listening... Speak now';
+    showToast('Microphone active. You can speak now.');
+  };
+
+  translatorRecognition.onresult = (event) => {
+    const result = event.results[0][0].transcript;
+    inputPanel.value = result;
+    showToast('Speech captured successfully!');
+  };
+
+  translatorRecognition.onerror = (event) => {
+    console.error('Speech recognition error', event.error);
+    showToast('Error capturing speech: ' + event.error, 'error');
+    stopTranslatorDisplay();
+  };
+
+  translatorRecognition.onend = () => {
+    stopTranslatorDisplay();
+  };
+
+  translatorRecognition.start();
+}
+
+function stopTranslatorDisplay() {
+  isTranslatorListening = false;
+  const micBtn = document.getElementById('translator-mic-btn');
+  const micHint = document.getElementById('mic-hint');
+  if (micBtn) {
+    micBtn.classList.remove('recording');
+    micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+  }
+  if (micHint) micHint.innerText = 'Tap to speak (Tamil or Tanglish)';
+}
+
 function scrollChat() {
   const win = document.getElementById('chat-window');
   if (win) win.scrollTop = win.scrollHeight;
@@ -921,6 +992,7 @@ window.handleSpeakClick = handleSpeakClick;
 window.resetPractice = resetPractice;
 window.handleChatSubmit = handleChatSubmit;
 window.handleTranslateSubmit = handleTranslateSubmit;
+window.handleTranslateMicClick = handleTranslateMicClick;
 
 // Session Check on Load
 async function checkSession() {

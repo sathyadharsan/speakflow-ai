@@ -274,6 +274,44 @@ nav { display: flex; justify-content: space-between; align-items: center; paddin
     to { opacity: 0; transform: translateY(-20px); }
 }
 
+@keyframes pulse {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(108, 99, 255, 0.4); }
+    70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(108, 99, 255, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(108, 99, 255, 0); }
+}
+
+.mic-btn-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.translator-mic-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--gradient-main);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(108, 99, 255, 0.2);
+}
+
+.translator-mic-btn.recording {
+    background: #EF4444;
+    animation: pulse 1.5s infinite;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.translator-mic-btn:hover {
+    transform: scale(1.1);
+}
+
 .toast.hide {
     animation: toastFadeOut 0.4s ease forwards;
-}
+}
