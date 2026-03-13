@@ -163,7 +163,7 @@ const Templates = {
           </div>
         </div>
         <div class="hero-image">
-          <img src="assets/hero-illustration.png" alt="SpeakFlow AI Illustration">
+          <img src="/hero-illustration.png" alt="SpeakFlow AI Illustration">
         </div>
       </section>
 
