@@ -3,6 +3,26 @@ import API_BASE_URL from './api.js';
 // API Configuration
 const API_BASE = `${API_BASE_URL}/api`;
 
+// Render explanation with separate English and Tanglish sections
+function renderExplanation(explanation) {
+  if (!explanation) return '';
+  if (explanation.includes('Tanglish:')) {
+    const parts = explanation.split('Tanglish:');
+    const englishPart = parts[0].replace('English:', '').trim();
+    const tanglishPart = parts[1].trim();
+    return `
+      <div style="margin-bottom:12px;">
+        <span style="font-size:0.72rem;font-weight:700;color:#4A90E2;text-transform:uppercase;letter-spacing:0.5px;">📘 English</span>
+        <p style="margin-top:6px;font-size:0.93rem;">${englishPart}</p>
+      </div>
+      <div style="border-top:1px solid #E2E8F0;padding-top:12px;">
+        <span style="font-size:0.72rem;font-weight:700;color:#6C63FF;text-transform:uppercase;letter-spacing:0.5px;">🗣️ Tanglish</span>
+        <p style="margin-top:6px;font-size:0.93rem;">${tanglishPart}</p>
+      </div>`;
+  }
+  return `<p style="font-size:0.93rem;">${explanation}</p>`;
+}
+
 // State Management
 const state = {
   activePage: 'landing', // 'landing', 'auth', 'dashboard', 'practice_selection', 'speaking_practice', 'chat_practice'
@@ -29,15 +49,15 @@ async function apiRequest(endpoint, method = 'GET', body = null) {
   // Always fetch current token from storage
   const token = localStorage.getItem('token');
   const headers = { 'Content-Type': 'application/json' };
-  
+
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
     // Keep local state in sync
     if (!state.token) state.token = token;
   }
 
-  const options = { 
-    method, 
+  const options = {
+    method,
     headers,
     credentials: 'include' // Required to send/receive cookies cross-domain
   };
@@ -45,17 +65,17 @@ async function apiRequest(endpoint, method = 'GET', body = null) {
 
   try {
     const response = await fetch(`${API_BASE}${endpoint}`, options);
-    
+
     // 401 Unauthorized: Access token expired, attempt refresh
     if (response.status === 401 && !endpoint.includes('/auth/refresh')) {
       if (!isRefreshing) {
         isRefreshing = true;
         try {
-          const refreshRes = await fetch(`${API_BASE}/auth/refresh`, { 
-            method: 'POST', 
-            credentials: 'include' 
+          const refreshRes = await fetch(`${API_BASE}/auth/refresh`, {
+            method: 'POST',
+            credentials: 'include'
           });
-          
+
           if (refreshRes.ok) {
             const data = await refreshRes.json();
             const newToken = data.accessToken;
@@ -100,7 +120,7 @@ async function apiRequest(endpoint, method = 'GET', body = null) {
       showToast(errorMessage, 'error');
       throw new Error(errorMessage);
     }
-    
+
     return await response.json();
   } catch (err) {
     if (err.message !== 'Unauthorized' && err.message !== 'Forbidden') {
@@ -487,7 +507,7 @@ const Templates = {
              <div class="stat-card">
                 <span class="stat-label">Today's Practice</span>
                 <span class="stat-value">${data.todayPracticeMinutes} Min</span>
-                <div class="xp-bar-container"><div class="xp-bar-fill" style="width: ${Math.min(100, (data.todayPracticeMinutes/20)*100)}%;"></div></div>
+                <div class="xp-bar-container"><div class="xp-bar-fill" style="width: ${Math.min(100, (data.todayPracticeMinutes / 20) * 100)}%;"></div></div>
              </div>
              <div class="stat-card">
                 <div style="display: flex; justify-content: space-between; align-items: flex-end;">
@@ -632,8 +652,11 @@ const Templates = {
               <div class="message ai">
                 <div>${m.correctedSentence}</div>
                 <div class="ai-feedback-box">
-                  <strong>Explanation:</strong> ${m.explanation}<br>
-                  <strong style="display:block; margin-top:4px;">Suggestion:</strong> ${m.suggestion}
+                  ${renderExplanation(m.explanation)}
+                  <div style="border-top:1px solid #E2E8F0;padding-top:12px;margin-top:4px;">
+                    <span style="font-size:0.72rem;font-weight:700;color:#48BB78;text-transform:uppercase;">💡 Suggestion</span>
+                    <p style="margin-top:6px;font-size:0.93rem;">${m.suggestion}</p>
+                  </div>
                 </div>
               </div>
             `).join('')}
@@ -728,18 +751,18 @@ async function handleProfileUpdate(e) {
   e.preventDefault();
   const formData = new FormData(e.target);
   const data = Object.fromEntries(formData.entries());
-  
+
   try {
     const btn = e.target.querySelector('button');
     btn.disabled = true;
     btn.textContent = 'Saving...';
-    
+
     await apiRequest('/profile', 'PUT', data);
-    
+
     // Update local state
     state.user.name = data.name;
     localStorage.setItem('user', JSON.stringify(state.user));
-    
+
     showToast('Profile updated successfully!', 'success');
   } catch (err) {
     showToast('Failed to update profile', 'error');
@@ -751,7 +774,7 @@ async function handleProfileUpdate(e) {
 function initCharts() {
   const ctx = document.getElementById('fluencyChart');
   if (!ctx) return;
-  
+
   const weeklyData = state.progressData?.weeklyFluency || [
     { week: 'Week 1', score: 62 },
     { week: 'Week 2', score: 68 },
@@ -777,13 +800,13 @@ function initCharts() {
     options: {
       responsive: true,
       plugins: { legend: { display: false } },
-      scales: { 
-        y: { 
-          beginAtZero: false, 
+      scales: {
+        y: {
+          beginAtZero: false,
           grid: { color: '#f0f0f0' },
           ticks: { stepSize: 10 }
-        }, 
-        x: { grid: { display: false } } 
+        },
+        x: { grid: { display: false } }
       }
     }
   });
@@ -893,7 +916,7 @@ function handleTranslateMicClick() {
 
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   translatorRecognition = new SpeechRecognition();
-  
+
   translatorRecognition.lang = 'en-IN'; // Better for Tanglish recognition
   translatorRecognition.interimResults = false;
   translatorRecognition.maxAlternatives = 1;
@@ -937,8 +960,10 @@ function stopTranslatorDisplay() {
 }
 
 function scrollChat() {
-  const win = document.getElementById('chat-window');
-  if (win) win.scrollTop = win.scrollHeight;
+  setTimeout(() => {
+    const win = document.getElementById('chat-window');
+    if (win) win.scrollTop = win.scrollHeight;
+  }, 0);
 }
 
 let isSpeaking = false;
@@ -978,8 +1003,11 @@ function render() {
   const app = document.getElementById('app');
   if (Templates[state.activePage]) {
     app.innerHTML = Templates[state.activePage]();
-    if (state.activePage === 'chat_practice') scrollChat();
-    window.scrollTo(0, 0);
+    if (state.activePage === 'chat_practice') {
+      scrollChat();
+    } else {
+      window.scrollTo(0, 0);
+    }
   }
 }
 

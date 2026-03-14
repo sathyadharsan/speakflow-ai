@@ -115,13 +115,18 @@ public class TranslationService {
     }
 
     private String translateTamilToEnglish(String tamilText, String key) throws Exception {
-        String systemPrompt = "You are an expert Tamil to English translator.\n\n" +
-                              "Translate the Tamil sentence into natural English.\n\n" +
-                              "Return ONLY the English sentence.\n\n" +
-                              "Examples:\n" +
-                              "சாப்பிட்டாயா → Did you eat?\n" +
-                              "நான் வரவில்லை → I didn't come\n" +
-                              "நான் கிளம்பவில்லை → I didn't leave";
+        String systemPrompt = "You are a Tamil-English (Tanglish) expert translator. " +
+                              "Tanglish means Tamil spoken words written in English letters. " +
+                              "Translate the EXACT MEANING into natural English. " +
+                              "Do NOT correct grammar. Do NOT add extra meaning. Translate ONLY.\n\n" +
+                              "EXAMPLES (learn the pattern):\n" +
+                              "Input: nalaiku pakalam → Output: We can do it tomorrow.\n" +
+                              "Input: naan romba tired → Output: I am very tired.\n" +
+                              "Input: avanga varala → Output: They didn't come.\n" +
+                              "Input: enna panra → Output: What are you doing?\n" +
+                              "Input: saptiya → Output: Did you eat?\n" +
+                              "Input: konjam wait panu → Output: Wait a little.\n\n" +
+                              "Now translate this Tanglish to English. Return ONLY the translation, nothing else.";
         
         return callGroqApi(systemPrompt, "Sentence: " + tamilText, key);
     }
