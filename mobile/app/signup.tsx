@@ -20,13 +20,18 @@ export default function SignupScreen() {
         body: JSON.stringify({ name, email, password }),
       });
       const text = await res.text();
+      console.log("Signup API raw response:", text);
+
       let data;
       try {
         data = JSON.parse(text);
       } catch (e) {
         throw new Error(text);
       }
-      if (!res.ok) throw new Error(data?.message || 'Signup failed');
+
+      if (!res.ok) {
+        throw new Error(data?.message || "Signup failed");
+      }
       
       Alert.alert('Success', 'Account created! Please log in.');
       router.replace('/');
