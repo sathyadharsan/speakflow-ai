@@ -26,9 +26,11 @@ public class AuthService {
     @Autowired
     private JwtUtils jwtUtils;
 
-    public MessageResponse signup(SignupRequest signupRequest) {
+    public org.springframework.http.ResponseEntity<?> signup(SignupRequest signupRequest) {
         if (userRepository.existsByEmail(signupRequest.getEmail())) {
-            throw new RuntimeException("Error: Email is already in use!");
+            return org.springframework.http.ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Email already exists"));
         }
 
         User user = User.builder()
@@ -38,7 +40,7 @@ public class AuthService {
                 .build();
 
         userRepository.save(user);
-        return new MessageResponse("User registered successfully");
+        return org.springframework.http.ResponseEntity.ok(new MessageResponse("User registered successfully"));
     }
 
     public org.springframework.http.ResponseEntity<LoginResponse> login(LoginRequest loginRequest) {
