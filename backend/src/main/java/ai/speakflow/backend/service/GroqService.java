@@ -67,7 +67,7 @@ public class GroqService {
                             "NEVER use grammar terms like past perfect tense, present continuous, auxiliary verb, singular subject. " +
                             "Write like a friendly WhatsApp message from a helpful friend, not a textbook. " +
                             "Example 1: Nice try! After have, always say eaten not ate - think of it as have and eaten always go together. " +
-                            "Example 2: Almost there! Use doesnt with she and he, save dont for I and you.>";
+                            "Example 2: Almost there! Use doesnt with she and he, save dont for I and you.>");
             messages.add(systemMessage);
 
             Map<String, String> userMessage = new HashMap<>();
