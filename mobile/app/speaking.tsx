@@ -32,7 +32,13 @@ export default function SpeakingPracticeScreen() {
         body: JSON.stringify({ sentence: "Yesterday I go office" })
       });
       if (res.ok) {
-        const data = await res.json();
+        const text = await res.text();
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          throw new Error(text);
+        }
         setResult(data);
       } else {
         throw new Error('Analysis failed');

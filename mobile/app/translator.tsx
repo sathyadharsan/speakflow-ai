@@ -22,8 +22,14 @@ export default function TranslatorScreen() {
         body: JSON.stringify({ text: input })
       });
       if (res.ok) {
-        const data = await res.json();
-        setResult(data.english || "Translation unavailable");
+        const text = await res.text();
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          throw new Error(text);
+        }
+        setResult(data?.english || "Translation unavailable");
       } else {
         throw new Error('Failed to translate');
       }

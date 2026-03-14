@@ -19,8 +19,14 @@ export default function SignupScreen() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Signup failed');
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        throw new Error(text);
+      }
+      if (!res.ok) throw new Error(data?.message || 'Signup failed');
       
       Alert.alert('Success', 'Account created! Please log in.');
       router.replace('/');

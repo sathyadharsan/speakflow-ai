@@ -21,7 +21,13 @@ export default function DashboardScreen() {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
-        const json = await res.json();
+        const text = await res.text();
+        let json;
+        try {
+          json = JSON.parse(text);
+        } catch (e) {
+          throw new Error(text);
+        }
         setData(json);
       }
     } catch (err) {

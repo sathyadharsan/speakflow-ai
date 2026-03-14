@@ -51,6 +51,12 @@
         "projectId": "cde5a6a4-cd02-4693-bd69-11ad44bfb600"
       }
     },
-    "owner": "sathyamuppudathi"
+    "owner": "sathyamuppudathi",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/cde5a6a4-cd02-4693-bd69-11ad44bfb600"
+    }
   }
 }
