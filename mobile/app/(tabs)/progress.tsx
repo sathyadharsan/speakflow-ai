@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_BASE = 'https://speakflow-ai.vercel.app/api';
+const API_BASE = 'https://speakflow-ai-2.onrender.com/api';
 
 export default function ProgressScreen() {
   const [data, setData] = useState<any>(null);

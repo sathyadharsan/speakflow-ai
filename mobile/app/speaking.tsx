@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 
-const API_BASE = 'https://speakflow-ai.vercel.app/api';
+const API_BASE = 'https://speakflow-ai-2.onrender.com/api';
 
 export default function SpeakingPracticeScreen() {
   const [isRecording, setIsRecording] = useState(false);

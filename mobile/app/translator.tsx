@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Activi
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 
-const API_BASE = 'https://speakflow-ai.vercel.app/api';
+const API_BASE = 'https://speakflow-ai-2.onrender.com/api';
 
 export default function TranslatorScreen() {
   const [input, setInput] = useState('');

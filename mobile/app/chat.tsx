@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, Keyboard
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 
-const API_BASE = 'https://speakflow-ai.vercel.app/api';
+const API_BASE = 'https://speakflow-ai-2.onrender.com/api';
 
 interface ChatMessage {
   id: string;

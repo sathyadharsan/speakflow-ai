@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 
-const API_BASE = 'https://speakflow-ai.vercel.app/api';
+const API_BASE = 'https://speakflow-ai-2.onrender.com/api';
 
 export default function DashboardScreen() {
   const [data, setData] = useState<any>(null);
