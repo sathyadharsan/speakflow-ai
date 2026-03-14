@@ -32,7 +32,7 @@ export default function SignupScreen() {
       if (!res.ok) {
         throw new Error(data?.message || "Signup failed");
       }
-      
+
       Alert.alert('Success', 'Account created! Please log in.');
       router.replace('/');
     } catch (err: any) {
@@ -45,7 +45,7 @@ export default function SignupScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Create Account</Text>
-      
+
       <TextInput
         style={styles.input}
         placeholder="Full Name"
@@ -67,13 +67,13 @@ export default function SignupScreen() {
         onChangeText={setPassword}
         secureTextEntry
       />
-      
+
       <TouchableOpacity style={styles.button} onPress={handleSignup} disabled={loading}>
         {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Sign Up</Text>}
       </TouchableOpacity>
-      
+
       <TouchableOpacity onPress={() => router.back()} style={styles.link}>
-         <Text style={styles.linkText}>Back to Login</Text>
+        <Text style={styles.linkText}>Back to Login</Text>
       </TouchableOpacity>
     </View>
   );
